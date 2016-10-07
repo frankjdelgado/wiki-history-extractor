@@ -14,11 +14,10 @@ def comment_processor(value):
 
 
 # Item processors
-class WikisItemLoader(ItemLoader):
-    default_input_processor = MapCompose(unicode.strip)
+class RevisionItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
 
-    comment_in = MapCompose(remove_tags, unicode.strip)
+    comment_in = MapCompose(remove_tags)
     comment_out = TakeFirst()
 
 
@@ -46,14 +45,10 @@ class JsonWriterPipeline(object):
         return item
 
 
-class WikiSpider(scrapy.Spider):
-    name = "wikis"
+class RevisionSpider(scrapy.Spider):
+    name = "revision"
 
     allowed_domains = ["mediawiki.org", "wikipedia.org", "wikimedia.org"]
-
-    start_urls = [
-        'https://en.wikipedia.org/w/index.php?title=Malazan_Book_of_the_Fallen&action=history',
-    ]
 
     custom_settings = {
         'ITEM_PIPELINES': {
@@ -65,12 +60,13 @@ class WikiSpider(scrapy.Spider):
         'DOWNLOAD_DELAY': 3
     }
 
+
     def parse(self, response):
 
         # Extract current revisions
         for revision in response.css('ul#pagehistory li'):
 
-            loader = WikisItemLoader(RevisionItem(), selector=revision, response=response)
+            loader = RevisionItemLoader(RevisionItem(), selector=revision, response=response)
 
             loader.add_css('comment', 'span.comment')
             loader.add_css('date', 'a.mw-changeslist-date::text')
@@ -91,11 +87,15 @@ class WikiSpider(scrapy.Spider):
             yield scrapy.Request(next_page, callback=self.parse)
 
 
-process = CrawlerProcess({
-    'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
-})
+class RevisionCrawler(object):
 
-process.crawl(WikiSpider)
-process.start()
-# the script will block here until the crawling is finished
+    def __init__(self,urls=[]):
+        self.urls = urls
 
+    def start(self):
+        process = CrawlerProcess({
+            'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+        })
+
+        process.crawl(RevisionSpider,start_urls=self.urls)
+        process.start()

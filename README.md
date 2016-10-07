@@ -3,9 +3,12 @@ A wikipedia history revision extractor through web spiders and API usage
 
 
 ### Scraper
-_Note: Currently the code only extract revisions from this [url](https://en.wikipedia.org/w/index.php?title=Malazan_Book_of_the_Fallen&action=history)_
-  * Navigate to /scraper
   * Install requeriments `pip install -r requirements.txt`
-  * Run `scrapy crawl wikis`
-  
+  * import class RevisionCrawler from revision_crawler.py
+  * Initialize the crawler
+    `urls = ['https://en.wikipedia.org/w/index.php?title=Malazan_Book_of_the_Fallen&action=history']`
+    `crawler = RevisionCrawler(urls)`
+  * Run it!
+    `crawler.start()`
+
 The extracted revision will be saved in scraper/revisions.json
