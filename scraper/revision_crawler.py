@@ -30,6 +30,7 @@ class RevisionItem(scrapy.Item):
     size = scrapy.Field()
     tags = scrapy.Field()
     extracted_date = scrapy.Field()
+    url = scrapy.Field()
 
 
 # Pipelines
@@ -75,6 +76,7 @@ class RevisionSpider(scrapy.Spider):
             loader.add_css('size', 'span.history-size::text')
             loader.add_css('tags', 'span.mw-tag-marker::text')
             loader.add_value('extracted_date', time.strftime("%c"))
+            loader.add_value('url', response.request.url)
 
             yield loader.load_item()
 
