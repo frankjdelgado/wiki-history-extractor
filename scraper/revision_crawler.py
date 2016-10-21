@@ -10,15 +10,28 @@ from scrapy.loader.processors import TakeFirst, MapCompose, Join
 
 def comment_processor(value):
     if value is not None:
-        return re.sub('<[^>]*>', '', value)
+        #re.sub('<[^>]*>', '', value)
+        value = value.replace(u'\u2192','')
+        value = value.replace(u'\u200e','')
+        value = value.lstrip('(')
+        value = value.rstrip(')')
+        return value
+
+
+def size_processor(value):
+    if value is not None:
+        value = value.lstrip('(')
+        value = value.rstrip(')')
+        return value
 
 
 # Item processors
 class RevisionItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
 
-    comment_in = MapCompose(remove_tags)
+    comment_in = MapCompose(remove_tags,comment_processor)
     comment_out = TakeFirst()
+    size_in = MapCompose(size_processor)
 
 
 # Revision item
@@ -30,7 +43,6 @@ class RevisionItem(scrapy.Item):
     size = scrapy.Field()
     tags = scrapy.Field()
     extracted_date = scrapy.Field()
-    url = scrapy.Field()
 
 
 # Pipelines
@@ -76,7 +88,6 @@ class RevisionSpider(scrapy.Spider):
             loader.add_css('size', 'span.history-size::text')
             loader.add_css('tags', 'span.mw-tag-marker::text')
             loader.add_value('extracted_date', time.strftime("%c"))
-            loader.add_value('url', response.request.url)
 
             yield loader.load_item()
 
