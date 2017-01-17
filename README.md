@@ -15,3 +15,5 @@ A wikipedia history revision extractor through web spiders and API usage
     `crawler.start()`
 
 The extracted revision data will be saved into a file called revisions.json
+
+https://en.wikipedia.org/w/api.php?action=query&titles=Malazan%20Book%20of%20the%20Fallen&prop=revisions&rvprop=ids|flags|timestamp|user|flags|user|userid|size|sha1|contentmodel|comment|parsedcomment|content|tags&format=jsonfm&rvlimit=50

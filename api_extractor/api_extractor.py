@@ -18,6 +18,10 @@ class RevisionExtractor(object):
         self.wait_time = wait_time
 
     def get_all(self):
+        # Get the last revision extracted allocated in the DB
+        revendid=self.find_last_revid()
+        if revendid != 0:
+            self.payload.update({'rvendid': revendid})
         batch = self.get_one()
 
         while ("continue" in batch):
@@ -43,5 +47,19 @@ class RevisionExtractor(object):
     def save(self, revision):
         RevisionDB.insert(revision)
 
-extractor = RevisionExtractor(payload={'titles': "Malazan Book of the Fallen"})
-content = extractor.get_all()
+    def remove_all(self):
+        RevisionDB.remove()
+    
+    def find_last_revid(self):
+        revision=RevisionDB.find_last()
+        if revision != None:
+            revid=0
+            for rev in revision:
+                revid=rev['revid']
+        else:
+            revid=0
+        return revid
+        
+
+#extractor = RevisionExtractor(payload={'titles': "Malazan Book of the Fallen"})
+#content = extractor.get_all()
