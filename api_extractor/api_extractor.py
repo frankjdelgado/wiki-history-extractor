@@ -23,7 +23,6 @@ class RevisionExtractor(object):
         if revendid != 0:
             self.payload.update({'rvendid': revendid})
         batch = self.get_one()
-
         while ("continue" in batch):
             time.sleep(self.wait_time)
             self.payload.update({'rvcontinue': batch["continue"]["rvcontinue"]})

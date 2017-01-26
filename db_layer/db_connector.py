@@ -1,8 +1,19 @@
 from pymongo import MongoClient
+import json
 
 class RevisionDB(object):
-    client = MongoClient()
-    db = client.wiki_history_extractor
+    
+    # it is extracted the information of the database connection, located in the 'connection_data.json' file
+    with open('connection_data.json') as json_data:
+        data = json.load(json_data)
+
+    host=data['host']
+    port=data['port']
+    username=data['username']
+    password=data['password']
+    client = MongoClient(host=host,port=port)
+    if client.wiki_history_extractor.authenticate(username, password, mechanism='SCRAM-SHA-1') == True :
+        db = client.wiki_history_extractor
 
     @classmethod
     def insert(cls, revisions):
