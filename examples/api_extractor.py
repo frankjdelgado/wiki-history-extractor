@@ -48,7 +48,7 @@ class RevisionExtractor(object):
 
     def remove_all(self):
         RevisionDB.remove()
-    
+
     def find_last_revid(self):
         revision=RevisionDB.find_last()
         if revision != None:

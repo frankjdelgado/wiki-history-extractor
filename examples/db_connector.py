@@ -27,6 +27,11 @@ class RevisionDB(object):
         return revisions
 
     @classmethod
+    def count(cls,query):
+        revisions = cls.db.revisions.find(query).count()
+        print revisions
+
+    @classmethod
     def find_last(cls):
         cursor= cls.db.revisions.find({},{'revid':1 , '_id':0})
         cursor = cursor.sort('revid', -1).limit(1)
