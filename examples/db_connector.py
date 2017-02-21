@@ -25,13 +25,18 @@ class RevisionDB(object):
     @classmethod
     #test method for inserting formatted timestamps
     def insert_date(cls):
-        cls.db.revisions.insert({'id': 123, 'timestamp': datetime.datetime(2015,1,1,6,1,18)})
-        cls.db.revisions.insert({'id': 124, 'timestamp': datetime.datetime(2015,2,4,3,1,20)})
-        cls.db.revisions.insert({'id': 125, 'timestamp': datetime.datetime(2015,6,6,14,1,18)})
+        cls.db.revisions.insert({'id': 123,'user':'marvin', 'timestamp': datetime.datetime(2015,1,1,6,1,18)})
+        cls.db.revisions.insert({'id': 124,'user':'marvin', 'timestamp': datetime.datetime(2015,2,4,3,1,20)})
+        cls.db.revisions.insert({'id': 125,'user':'marvin', 'timestamp': datetime.datetime(2015,6,6,14,1,18)})
 
     @classmethod
     def find(cls):
         revisions = cls.db.revisions.find()
+        return revisions
+
+    @classmethod
+    def find_query(cls,query):
+        revisions = cls.db.revisions.find({},query)
         return revisions
 
     @classmethod

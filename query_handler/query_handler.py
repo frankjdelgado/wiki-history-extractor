@@ -43,6 +43,7 @@ class QueryHandler(object):
         # 2 values: one date and one integer. 
         # If the integer is -1: It will return the revisions made from the first revision until the date.
         # If the integer is 1: It will return the revisions made from the date until the last revision.
+        # the strptime convert the string arguments into datetime datatype
         if len(values) == 1:
             date_i=datetime.datetime.strptime(values[0],date_format)
             #it is used 2 dates to extract the revision for the whole day, from 0:0 to 23:59
@@ -71,24 +72,86 @@ class QueryHandler(object):
                     return data
 
     @classmethod
+    #the filter allows multiple filters, based on the attribute argument
+    # 1111 - 0000 -> 1 on . 0 off
+    # 1XXX apply user filter
+    # X1XX apply tag filter
+    # XX1X apply size filter
+    # XXX1 apply date filter 
     def filter_by(self,attribute,values):
-        if attribute == 1:
-            query= self.filter_by_user(values)
-        elif attribute == 2:
-            query= self.filter_by_tag(values)
-        elif attribute == 3:
-            query= self.filter_by_size(values)
-        elif attribute == 4:
-            query= self.filter_by_date(values)
-        else:
+        token=attribute
+        query={}
+        valueslist=values
+        option=False
+        if token / 1000 == 1:
+            query.update(self.filter_by_user(valueslist))
+            del valueslist[0]
+            option=True
+        token= token % 1000 
+        if token / 100 == 1:
+            query.update(self.filter_by_tag(values))
+            del valueslist[0]
+            option=True
+        token= token % 100 
+        if token / 10 == 1:
+            query.update(self.filter_by_size(values))
+            del valueslist[0]
+            del valueslist[0]
+            option=True
+        token= token % 10 
+        if token == 1:
+            query.update(self.filter_by_date(values))
+            option=True
+        if option==False:
             print 'Wrong Filter Option'
-        return query
+            return ''
+        else:
+            return query
         
     @classmethod
     def get_count(self,filter_by_attribute,values):
         data=self.filter_by(filter_by_attribute,values)
-        return RevisionDB.count(data)
+        if data!='':
+            return RevisionDB.count(data)
 
+    @classmethod
+    #1 for user,2 for tag, 3 for size
+    #besides the values required to filter(eg: username for user filtering, size and order for size filtering), it requires 2 values, as with date filtering for 2 dates-interval
+    def get_avg(self,filter_by_attribute,values):
+        # the filter to set avg is converted in a code with date filtering included
+        code=2
+        if filter_by_attribute==1:
+            code=1001
+        elif filter_by_attribute==2:
+            code=101
+        elif filter_by_attribute==3:
+            code=11
+        else:
+            code=2
+        data=self.filter_by(code,values)
+        date_format = '%Y-%m-%d'
+        #the dates are extracted and it is calculated the number of days with the .days function (datetime.timedelta library)
+        date_i=datetime.datetime.strptime(values[len(values)-2],date_format)
+        date_f=datetime.datetime.strptime(values[len(values)-1],date_format)
+        days=(date_f-date_i).days
+        if data!='':
+            res= RevisionDB.count(data)
+            return res/(days*1.0)
+
+    @classmethod
+    def get_mode(self,filter_by_attribute):
+        projection={'_id':0}
+        if filter_by_attribute==1:
+            projection.update({'user':1})
+        elif filter_by_attribute==2:
+            projection.update({'tags':1})
+        elif filter_by_attribute==3:
+            projection.update({'size':1})
+        if filter_by_attribute==4:
+            projection.update({'timestamp':1})
+
+        return RevisionDB.find_query(projection)
+    
 
     @classmethod
     #test method for inserting formatted timestamps
