@@ -139,18 +139,55 @@ class QueryHandler(object):
             return res/(days*1.0)
 
     @classmethod
+    #function that gets the mode for an attribute, for now it works with users and size, because tags are mostly empty
+    #and date formats needs to be updated in the database(extractor)
     def get_mode(self,filter_by_attribute):
+        #it is created the projection for the query
         projection={'_id':0}
+        attribute=''
         if filter_by_attribute==1:
             projection.update({'user':1})
+            attribute='user'
         elif filter_by_attribute==2:
-            projection.update({'tags':1})
-        elif filter_by_attribute==3:
             projection.update({'size':1})
-        if filter_by_attribute==4:
-            projection.update({'timestamp':1})
-
-        return RevisionDB.find_query(projection)
+            attribute='size'
+#        elif filter_by_attribute==3:
+#            projection.update({'tags':1})
+#            attribute='tags'
+#        elif filter_by_attribute==4:
+#            projection.update({'timestamp':1})
+#            attribute='timestamp'
+        else:
+            projection=''
+        
+        if projection!='':
+            revisions=RevisionDB.find_query(projection)
+            valueslist=[]
+            repetitionslist=[]
+            #after collect the projected revisions, it is checked which values appears most,
+            #adding them to a list, and keeping track of their appearances on another list
+            for rev in revisions:
+                if not (rev[attribute] in valueslist) :
+                    valueslist.append(rev[attribute])
+                    repetitionslist.append(1)
+                else:
+                    position= valueslist.index(rev[attribute])
+                    repetitionslist[position]=repetitionslist[position]+1
+            
+            # it is calculated the value most repeated
+            maxi=max(repetitionslist)
+            mode=[]
+            i=0
+            #it is created a list with all values tied as mode
+            for r in repetitionslist:
+                if r==maxi:
+                    if isinstance(valueslist[i],unicode) :
+                    #in case of string, it is converted from unicode
+                        mode.append(str(valueslist[i]))
+                    else:
+                        mode.append(valueslist[i])
+                i=i+1
+            return mode
     
 
     @classmethod

@@ -12,10 +12,8 @@ count= handler.get_count(1001,[user,date1,date2])
 print count
 count= handler.get_avg(1,[user,date1,date2])
 print count
-#count= handler.get_mode(1)
-#for c in count:
-    #revid=rev['revid']
-#    print c['user']
+count= handler.get_mode(1)
+print count
 
 #a=handler.insert_dates()
 #a=handler.get_dates()
